@@ -94,6 +94,16 @@ module Thoughtbot
       // Display the mile centered vertically
       var top = ((block.getHeight() - mile.down().getHeight()) / 2);
       mile.down().relativize().setStyle({ top: top + 'px' });
+      
+      // Ensure that if a window resize changes the block properties that we update the
+      // mile properties to match.
+      Element.observe(window, 'resize', function() {
+        Position.clone(block, mile);
+        
+        // Display the mile centered vertically
+        var top = ((block.getHeight() - mile.down().getHeight()) / 2);
+        mile.down().setStyle({ top: top + 'px' });
+      });
     });
   }
   if(Event.observe) {
