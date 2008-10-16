@@ -25,9 +25,11 @@ module Thoughtbot
     
     def self.options
       @options ||= {
-        :z_index => 1000,
-        :background_color => "#000000",
-        :color => "#F3F3F3"
+        :z_index            => 1000,
+        :background_color   => "#000000",
+        :color              => "#F3F3F3",
+        :mouseout_opacity   => 0.4,
+        :mouseover_opacity  => 0.75
       }
     end
 
@@ -54,36 +56,44 @@ module Thoughtbot
   function init_miles() {
     $$('*[mile]').each(function(block, index) {
       html = '<div id="mile_'+index+'" style="display: none; z-index: #{options[:z_index]}; position: absolute; background-color: #{options[:background_color]}; opacity: 0.4; filter: alpha(opacity=40); font-family: Lucida Sans, Helvetica; font-size: 16px; font-weight: bold; white-space: nowrap; overflow: hidden;"><p style="cursor: default; padding: 3px 5px; background-color: #{options[:background_color]}; opacity: 1.0; filter: alpha(opacity=100); display: block; text-align: center; color: #{options[:color]};">'+block.getAttribute('mile')+'</p></div>'
-      new Insertion.Before($(block), html);
-      Position.clone($(block), $('mile_'+index));
-      if($('mile_'+index).getHeight() <= 25) { $('mile_'+index).setStyle({fontSize: '10px'}); }
-      $('mile_'+index).observe("mouseover", function(event) {
+      $(block).insert({ before: html });
+      
+      var block = $(block),
+          mile  = $('mile_' + index);
+      
+      Position.clone(block, mile);
+      
+      if (mile.getHeight() <= 25) mile.setStyle({fontSize: '10px'});
+      
+      mile.observe("mouseover", function(event) {
         element = Event.element(event); 
-        if(element.immediateDescendants()[0]) 
-        {
-          element.setStyle({opacity: 0.75});
-          if(element.style.filters) element.style.filters.alpha.opacity=75; 
+        if (element.immediateDescendants()[0]) {
+          element.setStyle({opacity: #{options[:mouseover_opacity]}});
+          if (element.style.filters) element.style.filters.alpha.opacity = #{options[:mouseover_opacity] * 100}; 
         }
         else
         {
-          element.up().setStyle({opacity: 0.75}); 
-          if(element.up().style.filters) element.up().style.filters.alpha.opacity=75; 
+          element.up().setStyle({opacity: #{options[:mouseover_opacity]}}); 
+          if(element.up().style.filters) element.up().style.filters.alpha.opacity = #{options[:mouseover_opacity] * 100}; 
         }
-      });
-      $('mile_'+index).observe("mouseout", function(event) {
+      }).observe("mouseout", function(event) {
         element = Event.element(event); 
         if(element.immediateDescendants()[0]) 
         {
-          element.setStyle({opacity: 0.4}); 
-          if(element.style.filters) element.style.filters.alpha.opacity=40; 
+          element.setStyle({opacity: #{options[:mouseout_opacity]}}); 
+          if(element.style.filters) element.style.filters.alpha.opacity = #{options[:mouseout_opacity] * 100}; 
         }
         else
         {
-          element.up().setStyle({opacity: 0.4}); 
-          if(element.up().style.filters) element.up().style.filters.alpha.opacity=40; 
+          element.up().setStyle({opacity: #{options[:mouseout_opacity]}}); 
+          if(element.up().style.filters) element.up().style.filters.alpha.opacity = #{options[:mouseout_opacity] * 100}; 
         }
       });
-      $('mile_'+index).toggle();
+      mile.toggle().setStyle({ display: 'block;' });
+      
+      // Display the mile centered vertically
+      var top = ((block.getHeight() - mile.down().getHeight()) / 2);
+      mile.down().relativize().setStyle({ top: top + 'px' });
     });
   }
   if(Event.observe) {
